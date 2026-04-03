@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sudoku - Number Puzzle Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0f1a;
+    --surface: #141829;
+    --surface-alt: #1a1f36;
+    --accent: #6c8aff;
+    --accent-glow: rgba(108, 138, 255, 0.15);
+    --accent-warm: #ff8a6c;
+    --text: #e8eaf6;
+    --text-dim: #8890b5;
+    --text-muted: #5a6180;
+    --border: rgba(108, 138, 255, 0.12);
+    --radius: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(24px);
+    background: rgba(12, 15, 26, 0.7);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    transition: color 0.3s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent);
+    color: #fff !important;
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-weight: 600 !important;
+    transition: transform 0.2s, box-shadow 0.3s !important;
+  }
+  .nav-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(108, 138, 255, 0.35);
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 140px 24px 100px;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60%; left: 50%; transform: translateX(-50%);
+    width: 900px; height: 900px;
+    background: radial-gradient(circle, rgba(108, 138, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 18px;
+    background: var(--accent-glow);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 32px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.2rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    max-width: 780px;
+    margin: 0 auto 28px;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero p {
+    font-size: 1.12rem;
+    color: var(--text-dim);
+    max-width: 520px;
+    margin: 0 auto 44px;
+    font-weight: 300;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.3s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(108, 138, 255, 0.35);
+  }
+  .btn-primary svg { width: 22px; height: 22px; }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .btn-secondary:hover {
+    border-color: rgba(108,138,255,0.3);
+    background: var(--surface-alt);
+  }
+
+  /* ---- SUDOKU GRID DECORATION ---- */
+  .hero-grid {
+    margin-top: 72px;
+    display: inline-grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    animation: fadeUp 0.8s 0.4s ease both;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  }
+  .hero-grid .cell {
+    width: clamp(28px, 4.5vw, 44px);
+    height: clamp(28px, 4.5vw, 44px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(0.7rem, 1.5vw, 1.05rem);
+    color: var(--text-dim);
+    background: var(--bg);
+    border-radius: 6px;
+    transition: background 0.4s, color 0.4s;
+  }
+  .hero-grid .cell.filled { color: var(--accent); font-weight: 600; }
+  .hero-grid .cell.highlight {
+    background: var(--accent-glow);
+    color: var(--accent-warm);
+  }
+  .hero-grid .cell:nth-child(3n) { margin-right: 3px; }
+  .hero-grid .cell:nth-child(n+19):nth-child(-n+27) { margin-bottom: 3px; }
+  .hero-grid .cell:nth-child(n+46):nth-child(-n+54) { margin-bottom: 3px; }
+
+  /* ---- SECTION SHARED ---- */
+  section { padding: 120px 24px; }
+  .section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .section-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .section-desc {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 560px;
+    font-weight: 300;
+  }
+
+  /* ---- FEATURES ---- */
+  #features { background: var(--bg); }
+  .features-header { text-align: center; margin-bottom: 72px; }
+  .features-header .section-desc { margin: 0 auto; }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    padding: 36px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .feature-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(108,138,255,0.25);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  }
+  .feature-card:hover::after { opacity: 1; }
+  .feature-icon {
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-glow);
+    border-radius: 14px;
+    margin-bottom: 22px;
+    font-size: 1.5rem;
+  }
+  .feature-card h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .feature-card p {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  /* ---- HIGHLIGHT SECTION ---- */
+  .highlight-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .highlight-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .highlight-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .highlight-visual .number-display {
+    font-family: 'DM Serif Display', serif;
+    font-size: 10rem;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+    user-select: none;
+  }
+  .highlight-text .section-title em {
+    font-family: 'DM Serif Display', serif;
+    font-style: italic;
+    color: var(--accent);
+  }
+  .highlight-list {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .highlight-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .highlight-item .dot {
+    margin-top: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .highlight-item p {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .highlight-item strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ---- APP INFO ---- */
+  #info { background: var(--bg); }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-top: 56px;
+  }
+  .info-card {
+    padding: 32px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .info-card .info-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .info-card .info-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--text);
+  }
+  .info-card .info-value small {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ---- CTA / DOWNLOAD ---- */
+  .cta-section {
+    text-align: center;
+    padding: 140px 24px;
+    position: relative;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 500px;
+    background: radial-gradient(circle, rgba(108, 138, 255, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section .section-title {
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+  .cta-section .section-desc {
+    margin: 0 auto 48px;
+    text-align: center;
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    padding: 48px 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  footer p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+  footer a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  footer a:hover { color: var(--accent); }
+
+  /* ---- ANIMATIONS ---- */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 20px 80px; }
+    .hero-grid { display: none; }
+    .highlight-grid { grid-template-columns: 1fr; gap: 40px; }
+    .highlight-visual { display: none; }
+    .info-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    section { padding: 80px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Sudoku<span>Pro</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#philosophy">Philosophy</a>
+    <a href="https://apps.apple.com/us/app/sudoku-number-puzzle-pro/id6761462681" class="nav-cta" target="_blank">Download</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-badge">Free on the App Store</div>
+    <h1>Don't Just Solve It — <em>Understand</em> It</h1>
+    <p>A Sudoku experience that teaches you to think. Hints explain the why, replays show the how, and every puzzle makes you sharper.</p>
+    <div class="hero-actions">
+      <a href="https://apps.apple.com/us/app/sudoku-number-puzzle-pro/id6761462681" class="btn-primary" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Download for iOS
+      </a>
+      <a href="#features" class="btn-secondary">Explore Features ↓</a>
+    </div>
+
+    <!-- Mini Sudoku Grid -->
+    <div class="hero-grid" aria-hidden="true">
+      <div class="cell filled">5</div><div class="cell">3</div><div class="cell highlight"></div>
+      <div class="cell"></div><div class="cell filled">7</div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+      <div class="cell">6</div><div class="cell"></div><div class="cell"></div>
+      <div class="cell filled">1</div><div class="cell filled">9</div><div class="cell filled">5</div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+
+      <div class="cell"></div><div class="cell filled">9</div><div class="cell">8</div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell">6</div><div class="cell"></div>
+
+      <div class="cell highlight">8</div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell filled">6</div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell">3</div>
+
+      <div class="cell filled">4</div><div class="cell"></div><div class="cell"></div>
+      <div class="cell highlight">8</div><div class="cell"></div><div class="cell filled">3</div>
+      <div class="cell"></div><div class="cell"></div><div class="cell filled">1</div>
+
+      <div class="cell">7</div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell filled">2</div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell highlight">6</div>
+
+      <div class="cell"></div><div class="cell">6</div><div class="cell"></div>
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell filled">2</div><div class="cell">8</div><div class="cell"></div>
+
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell filled">4</div><div class="cell filled">1</div><div class="cell filled">9</div>
+      <div class="cell"></div><div class="cell"></div><div class="cell">5</div>
+
+      <div class="cell"></div><div class="cell"></div><div class="cell"></div>
+      <div class="cell"></div><div class="cell highlight">8</div><div class="cell"></div>
+      <div class="cell"></div><div class="cell">7</div><div class="cell filled">9</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="features-header animate-on-scroll">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need to truly master Sudoku</h2>
+      <p class="section-desc">Not just another puzzle app. A complete learning system built around the moment of understanding.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">💡</div>
+        <h3>Step-by-Step Hints</h3>
+        <p>When you're stuck, get the next logical move — with a clear explanation of the reasoning. Not just the answer, but the why behind every step.</p>
+      </div>
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">📖</div>
+        <h3>Technique Tutorials</h3>
+        <p>Learn classic strategies at your own pace, from basic elimination to advanced logic. Build a real solving toolkit, one technique at a time.</p>
+      </div>
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">🔄</div>
+        <h3>Solution Replay</h3>
+        <p>Once you finish, replay the entire puzzle step by step. Turn "I got lucky" into "I know exactly what I did."</p>
+      </div>
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">📊</div>
+        <h3>Four Difficulty Levels</h3>
+        <p>Easy, Medium, Hard, and Expert — pick your challenge and push your limits whenever you're ready for the next step.</p>
+      </div>
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">✏️</div>
+        <h3>Custom Puzzles</h3>
+        <p>Spotted an interesting puzzle in a magazine? Enter it manually and start solving instantly, anywhere, anytime.</p>
+      </div>
+      <div class="feature-card animate-on-scroll">
+        <div class="feature-icon">⚙️</div>
+        <h3>Smart Assistance</h3>
+        <p>Notes mode, duplicate highlighting, and auto-remove candidates — so you can focus on thinking, not on housekeeping.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HIGHLIGHT / PHILOSOPHY -->
+<section class="highlight-section" id="philosophy">
+  <div class="section-inner">
+    <div class="highlight-grid">
+      <div class="highlight-visual">
+        <div class="number-display">9²</div>
+      </div>
+      <div class="highlight-text animate-on-scroll">
+        <div class="section-label">Philosophy</div>
+        <h2 class="section-title">One puzzle at a time.<br>One <em>insight</em> at a time.</h2>
+        <p class="section-desc">The real joy of Sudoku isn't filling in the last cell. It's that moment when everything suddenly clicks.</p>
+        <div class="highlight-list">
+          <div class="highlight-item">
+            <div class="dot"></div>
+            <p><strong>Solving + Hints + Tutorials</strong> — woven together in one seamless experience, so every puzzle becomes a learning opportunity.</p>
+          </div>
+          <div class="highlight-item">
+            <div class="dot"></div>
+            <p><strong>Track your growth</strong> — Time, mistake count, and solve details for every completed puzzle. Watch yourself improve.</p>
+          </div>
+          <div class="highlight-item">
+            <div class="dot"></div>
+            <p><strong>Privacy first</strong> — No data collected. No accounts required. Just you and the puzzle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="section-inner animate-on-scroll">
+    <div class="section-label">Ready?</div>
+    <h2 class="section-title">Start your first puzzle today</h2>
+    <p class="section-desc">Free on the App Store. No ads. No data collection. Just pure, thoughtful Sudoku.</p>
+    <a href="https://apps.apple.com/us/app/sudoku-number-puzzle-pro/id6761462681" class="btn-primary" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      Download for iOS
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© HOPEDEV APP · <a href="https://docs.qq.com/doc/DT09ZUUdSdEhsc1RG" target="_blank">Privacy Policy</a></p>
+</footer>
+
+<script>
+  // Scroll animation observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
